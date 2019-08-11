@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>    
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>PROPERANDO - Sección ahorro</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<style>
+			*,
+			*:before,
+			*:after {
+				-webkit-box-sizing: border-box;
+				   -moz-box-sizing: border-box;
+						box-sizing: border-box;
+			}
+			html {
+				color: #404040;
+				font-family: Helvetica, arial, sans-serif;
+			}
+			body {
+				padding: 50px 40px;
+				margin: 0 auto;
+				/*max-width: 800px;*/
+			}
+			.slider_heading {
+				display: block;
+				font-size: 20px;
+				text-align: left;
+				margin: 15px 0;
+				width: 100%;
+			}
+			
+			output {
+				color: #000;
+				display: block;
+				margin: 8px 0;
+				font-size: 15px;
+			}
+			.slidersContainer{
+				float: left;
+				width: 57%;
+			}
+			.resultContainer{
+				margin-left: 63%
+				/*height: 100%;*/
+			}
+			.columnDesc{
+				float: left;
+				width: 72%;
+			}
+			.columnVal{
+				float: right;
+				width: 28%;
+			}			
+			.letraChica{
+				color: gray;
+				font-size: 10px;
+			}
+			
+			@media only screen and (max-width: 700px){
+				.slidersContainer {
+					display: inline-block;
+					width:100%;
+				}
+				.resultContainer {
+					display: inline-block;
+					width:100%;
+					margin: 30px 0;
+				}
+			}			
+		</style>
+	</head>
+	<body>	
+		<link rel="stylesheet" href="rangeslider.css">
+		
+		<div class = "allPriceSlidersContainer"> 
+			<div class = "slidersContainer">
+				<div>
+					<p class = "slider_heading">Valor de tu propiedad</p>
+					<input id = "slider"
+					type="range" 
+					min="10000" 
+					max="1000000" 
+					step="10000"
+					data-rangeslider>
+					<output></output>
+					<br>
+					<br>
+				</div>
+				<div>
+					<p class = "slider_heading">Comisión de venta</p>
+					<input id = "slider2"
+					type="range"
+					min="1"                    
+					max="3"                 
+					step="0.5"                   
+					value="2.5"                
+					data-rangeslider>
+					<output></output>
+				</div>
+			</div>
+
+			
+			<div class = "resultContainer">
+				<div class="wps_simulador_result">
+					<p class = "wps_simulador_result_text" >
+						<span>
+							Te ahorras <br><br>
+						</span>
+					</p>
+					
+					<p id = "saveValue" class="wps_simulador_result_amount">
+						<span></span>
+					</p>
+				</div>
+	
+				<div class = "columnDesc">
+					<p>Una inmobiliaria tradicional te cobra (*)</p>
+				</div>
+				<div class = "columnVal">
+					<p id = "valOthers" align = "right"></p>
+				</div>
+				<div class = "columnDesc">
+					<p>Properando te cobra solo</p>
+				</div>
+				<div class = "columnVal">
+					<p id = "valProperando" align = "right"></p>
+				</div>
+	
+			</div>	
+			<br>
+			<p class="letraChica">(*)Cotización del dolar aproximada (1 U$D = 40 $)</p>
+		</div>
+
+		
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+		<script src="rangeslider.js"></script>
+		<script>
+		$(function sliderFunction() {
+			var $document = $(document);
+			var selector = '[data-rangeslider]';
+			var $element = $(selector);
+			// For ie8 support
+			var textContent = ('textContent' in document) ? 'textContent' : 'innerText';
+			
+						
+			// Example functionality to demonstrate a value feedback
+			function valueOutput(element) {
+				var value = element.value;
+				var output = element.parentNode.getElementsByTagName('output')[0] || element.parentNode.parentNode.getElementsByTagName('output')[0];
+				
+				if (value < 10){
+					value_str = value.toString().replace(".", ",") + " %"
+				} else{
+					value_str = value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " U$D"
+				}
+				output[textContent] = value_str;
+				
+				// Calcula el valor de la operación al dejar de mover cualquiera de los sliders
+					val_dolar = 40;
+					value_slider_prop = document.getElementById("slider").value;
+					value_slider_comis = document.getElementById("slider2").value;
+					value_comis_others = ((value_slider_prop/100) * value_slider_comis) * val_dolar;
+					value_comis_others_str = value_comis_others.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " $";
+					$('#valOthers').text(value_comis_others_str);
+					
+					if(value_slider_prop > 0 && value_slider_prop <= 70000){
+						value_comis_properando = 10000;
+					} else if(value_slider_prop > 70000 && value_slider_prop <= 150000){
+						value_comis_properando = 13000;
+					} else if (value_slider_prop > 150000 && value_slider_prop <= 200000){
+						value_comis_properando = 20000;
+					} else {
+						value_comis_properando = 30000;
+					}
+					
+					value_comis_properando_str = value_comis_properando.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " $";
+					$('#valProperando').text(value_comis_properando_str);
+					
+					value_save = value_comis_others - value_comis_properando;
+					value_save_str = value_save.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " $";
+					$('#saveValue').text(value_save_str);
+					
+			}
+			$document.on('input', 'input[type="range"], ' + selector, function(e) {
+				valueOutput(e.target);
+			});
+		
+			// Basic rangeslider initialization
+			$element.rangeslider({
+				// Deactivate the feature detection
+				polyfill: false,
+				
+				// Callback function
+				onInit: function() {
+					valueOutput(this.$element[0]);
+				}
+			});
+		});
+		</script>
+	</body>
+</html>
